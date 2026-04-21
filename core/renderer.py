@@ -57,6 +57,7 @@ class Renderer:
             board_height + 16,
         )
         self.restart_button_rect = pygame.Rect(WINDOW_WIDTH // 2 - 26, 14, 52, 52)
+        self.time_badge_rect = pygame.Rect(WINDOW_WIDTH // 2 - 44, 8, 88, 64)
         self.auto_solver_button_rect = pygame.Rect(WINDOW_WIDTH - 150, 18, 110, 36)
 
     def draw_rounded_panel(self, rect, fill_color, border_color=None, radius=18, shadow_offset=4):
@@ -223,10 +224,22 @@ class Renderer:
         Returns:
             None
         """
+        badge_rect = self.time_badge_rect
+        shadow_rect = badge_rect.move(0, 3)
+        pygame.draw.ellipse(self.screen, (189, 204, 194), shadow_rect)
+        pygame.draw.ellipse(self.screen, (255, 230, 109), badge_rect)
+        pygame.draw.ellipse(self.screen, (217, 177, 37), badge_rect, 2)
+
         label_color = self.subtle_text
         value_color = self.text_color if not frozen else self.accent_color
-        self.draw_text("Time", self.header_rect.right - 270, self.header_rect.y + 10, self.tiny_font, label_color)
-        self.draw_text(f"{elapsed_seconds:03}", self.header_rect.right - 270, self.header_rect.y + 28, self.title_font, value_color)
+
+        label_surface = self.tiny_font.render("Time", True, label_color)
+        label_rect = label_surface.get_rect(center=(badge_rect.centerx, badge_rect.y + 16))
+        self.screen.blit(label_surface, label_rect)
+
+        value_surface = self.title_font.render(f"{elapsed_seconds:03}", True, value_color)
+        value_rect = value_surface.get_rect(center=(badge_rect.centerx, badge_rect.y + 40))
+        self.screen.blit(value_surface, value_rect)
 
     def draw_status(self, game_state, animation_time=0, auto_solver_enabled=False, solver_available=True):
         """
