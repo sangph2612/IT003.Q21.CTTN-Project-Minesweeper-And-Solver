@@ -82,7 +82,6 @@ class App:
         if not self.auto_solver_enabled:
             return
         if not self.solver_bridge.is_available():
-            self.auto_solver_enabled = False
             return
         if self.game.game_over or self.game.victory:
             return
@@ -91,10 +90,10 @@ class App:
         if current_tick - self.last_auto_solver_tick < self.auto_solver_interval_ms:
             return
 
-        moved = self.solver_bridge.apply_next_move(self.game)
+        result = self.solver_bridge.apply_next_move(self.game)
         self.last_auto_solver_tick = current_tick
 
-        if not moved:
+        if result == "ERROR":
             self.auto_solver_enabled = False
             return
 

@@ -39,7 +39,7 @@ class SolverBridge:
     def get_next_move(self, game_state):
         """Run the external solver and parse its next suggested move."""
         if not self.is_available():
-            return None
+            return "UNAVAILABLE", None
 
         process = subprocess.run(
             [str(self.solver_path)],
@@ -51,48 +51,59 @@ class SolverBridge:
         )
 
         if process.returncode != 0:
-            return None
+            return "ERROR", None
 
         output = process.stdout.strip()
         if not output:
-            return None
+            return "NONE", None
 
         parts = output.split()
         if parts[0] == "NONE":
-            return None
+            return "NONE", None
         if len(parts) != 3:
-            return None
+            return "ERROR", None
 
         move_type, row_text, col_text = parts
         try:
             row = int(row_text)
             col = int(col_text)
         except ValueError:
-            return None
+            return "ERROR", None
 
         if move_type not in {"SAFE", "MINE"}:
-            return None
+            return "ERROR", None
 
-        return move_type, row, col
+        return "MOVE", (move_type, row, col)
 
     def apply_next_move(self, game_state):
         """Ask the solver for one move and apply it to the current game state."""
-        move = self.get_next_move(game_state)
-        if move is None:
-            return False
+        status, move = self.get_next_move(game_state)
+        if status != "MOVE":
+            return status
 
         move_type, row, col = move
         if not game_state.board.is_inside(row, col):
-            return False
+            return "ERROR"
 
         if move_type == "SAFE":
-            game_state.reveal_cell(row, col)
-            return True
+            self._apply_safe_move(game_state, row, col)
+            return "MOVE"
 
         if move_type == "MINE":
             cell = game_state.board.get_cell(row, col)
             if not cell.is_flagged:
                 game_state.toggle_flag(row, col)
-            return True
+            return "MOVE"
 
-        return False
+        return "ERROR"
+
+    def _apply_safe_move(self, game_state, row, col):
+        """Apply a safe solver move, including the first-click bootstrap case."""
+        if game_state.first_click_done:
+            game_state.reveal_cell(row, col)
+            return
+
+        game_state.place_mines(row, col)
+        game_state.calculate_neighbor_mines()
+        game_state.first_click_done = True
+        game_state.reveal_cell(row, col)
