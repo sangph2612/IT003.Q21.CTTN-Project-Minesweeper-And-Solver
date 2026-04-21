@@ -1,0 +1,47 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Build and distribution
+build/
+dist/
+*.egg-info/
+
+# C/C++ build outputs
+*.o
+*.obj
+*.exe
+*.out
+*.dll
+*.so
+*.a
+
+# Local solver I/O files
+sangph2612.inp
+sangph2612.out
+
+# IDE and editor files
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local planning and notes
+TODO.md
+*plan*.md
