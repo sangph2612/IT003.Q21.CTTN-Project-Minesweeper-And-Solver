@@ -58,7 +58,7 @@ class Renderer:
         )
         self.restart_button_rect = pygame.Rect(WINDOW_WIDTH // 2 - 26, 14, 52, 52)
         self.time_badge_rect = pygame.Rect(WINDOW_WIDTH // 2 - 44, 8, 88, 64)
-        self.auto_solver_button_rect = pygame.Rect(WINDOW_WIDTH - 150, 18, 110, 36)
+        self.auto_solver_button_rect = pygame.Rect(WINDOW_WIDTH - 150, WINDOW_HEIGHT - BOTTOM_BAR_HEIGHT + 20, 110, 36)
 
     def draw_rounded_panel(self, rect, fill_color, border_color=None, radius=18, shadow_offset=4):
         """Draw a rounded panel with an optional border and drop shadow."""
@@ -273,12 +273,12 @@ class Renderer:
         self.draw_text(text, self.footer_rect.x + 18, self.footer_rect.y + 18, self.small_font, color)
 
         if game_state.victory:
-            sparkle_x = self.footer_rect.right - 38 + (animation_time // 120 % 6)
+            sparkle_x = self.footer_rect.right - 180 + (animation_time // 120 % 6)
             sparkle_y = self.footer_rect.y + 20
             pygame.draw.circle(self.screen, self.accent_color, (sparkle_x, sparkle_y), 4)
             pygame.draw.circle(self.screen, self.accent_color, (sparkle_x + 18, sparkle_y + 10), 3)
         elif game_state.game_over:
             shake = (animation_time // 120) % 2
-            dot_x = self.footer_rect.right - 34 + shake * 2
+            dot_x = self.footer_rect.right - 180 + shake * 2
             dot_y = self.footer_rect.y + 26
             pygame.draw.circle(self.screen, self.danger_color, (dot_x, dot_y), 4)
