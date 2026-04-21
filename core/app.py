@@ -4,6 +4,7 @@ from core.config import CELL_SIZE, COLS, FPS, MINE_COUNT, ROWS, WINDOW_HEIGHT, W
 from core.game_logic import GameState
 from core.input_handler import InputHandler
 from core.renderer import Renderer
+from core.solver_bridge import SolverBridge
 
 
 class App:
@@ -18,6 +19,9 @@ class App:
         self.running = True
         self.start_ticks = pygame.time.get_ticks()
         self.frozen_elapsed_seconds = None
+        self.last_auto_solver_tick = 0
+        self.auto_solver_interval_ms = 300
+        self.auto_solver_enabled = False
 
         self.cell_size = CELL_SIZE
 
@@ -27,11 +31,13 @@ class App:
         self.game = GameState(rows, cols, num_mines=MINE_COUNT)
         self.renderer = Renderer(self.screen, self.cell_size)
         self.input_handler = InputHandler(self.cell_size, self.renderer)
+        self.solver_bridge = SolverBridge()
 
     def reset_timer(self):
         """Reset the in-game timer for a new match."""
         self.start_ticks = pygame.time.get_ticks()
         self.frozen_elapsed_seconds = None
+        self.last_auto_solver_tick = 0
 
     def run(self):
         """
@@ -63,7 +69,7 @@ class App:
                 previous_game_over = self.game.game_over
                 previous_victory = self.game.victory
 
-                did_reset = self.input_handler.handle_event(event, self.game)
+                did_reset = self.input_handler.handle_event(event, self.game, self)
                 if did_reset:
                     self.reset_timer()
                     continue
@@ -72,8 +78,28 @@ class App:
                     self.frozen_elapsed_seconds = (pygame.time.get_ticks() - self.start_ticks) // 1000
 
     def update(self):
-        """Update game state between frames if future logic is needed."""
-        pass
+        """Update game state between frames and drive auto solver when enabled."""
+        if not self.auto_solver_enabled:
+            return
+        if not self.solver_bridge.is_available():
+            self.auto_solver_enabled = False
+            return
+        if self.game.game_over or self.game.victory:
+            return
+
+        current_tick = pygame.time.get_ticks()
+        if current_tick - self.last_auto_solver_tick < self.auto_solver_interval_ms:
+            return
+
+        moved = self.solver_bridge.apply_next_move(self.game)
+        self.last_auto_solver_tick = current_tick
+
+        if not moved:
+            self.auto_solver_enabled = False
+            return
+
+        if self.game.victory or self.game.game_over:
+            self.frozen_elapsed_seconds = (pygame.time.get_ticks() - self.start_ticks) // 1000
 
     def draw(self):
         """
@@ -90,9 +116,20 @@ class App:
             frozen = False
 
         animation_time = pygame.time.get_ticks()
+        solver_available = self.solver_bridge.is_available()
 
         self.renderer.draw_background()
         self.renderer.draw_board(self.game.board, animation_time)
         self.renderer.draw_restart_button(self.game, self.input_handler.restart_pressed)
+        self.renderer.draw_auto_solver_button(
+            self.auto_solver_enabled,
+            self.input_handler.auto_solver_pressed,
+            available=solver_available,
+        )
         self.renderer.draw_time_label(elapsed_seconds, frozen=frozen)
-        self.renderer.draw_status(self.game, animation_time)
+        self.renderer.draw_status(
+            self.game,
+            animation_time,
+            auto_solver_enabled=self.auto_solver_enabled,
+            solver_available=solver_available,
+        )

@@ -57,6 +57,7 @@ class Renderer:
             board_height + 16,
         )
         self.restart_button_rect = pygame.Rect(WINDOW_WIDTH // 2 - 26, 14, 52, 52)
+        self.auto_solver_button_rect = pygame.Rect(WINDOW_WIDTH - 150, 18, 110, 36)
 
     def draw_rounded_panel(self, rect, fill_color, border_color=None, radius=18, shadow_offset=4):
         """Draw a rounded panel with an optional border and drop shadow."""
@@ -183,6 +184,34 @@ class Renderer:
         else:
             pygame.draw.arc(self.screen, self.text_color, mouth_rect, 0.35, 2.79, 3)
 
+    def draw_auto_solver_button(self, enabled, pressed=False, available=True):
+        """Draw the auto solver toggle button."""
+        button_rect = self.auto_solver_button_rect.copy()
+        if pressed:
+            button_rect.y += 2
+
+        if not available:
+            fill_color = (220, 226, 230)
+            text = "Solver N/A"
+            text_color = self.subtle_text
+        elif enabled:
+            fill_color = (187, 247, 208)
+            text = "Auto Solver ON"
+            text_color = (22, 101, 52)
+        else:
+            fill_color = (226, 232, 240)
+            text = "Auto Solver OFF"
+            text_color = self.text_color
+
+        shadow_rect = button_rect.move(0, 3)
+        pygame.draw.rect(self.screen, (189, 204, 194), shadow_rect, border_radius=14)
+        pygame.draw.rect(self.screen, fill_color, button_rect, border_radius=14)
+        pygame.draw.rect(self.screen, (176, 190, 197), button_rect, 2, border_radius=14)
+
+        text_surface = self.tiny_font.render(text, True, text_color)
+        text_rect = text_surface.get_rect(center=button_rect.center)
+        self.screen.blit(text_surface, text_rect)
+
     def draw_time_label(self, elapsed_seconds, frozen=False):
         """
         Draw the elapsed time label and highlight it when the timer is frozen.
@@ -196,16 +225,18 @@ class Renderer:
         """
         label_color = self.subtle_text
         value_color = self.text_color if not frozen else self.accent_color
-        self.draw_text("Time", self.header_rect.right - 110, self.header_rect.y + 10, self.tiny_font, label_color)
-        self.draw_text(f"{elapsed_seconds:03}", self.header_rect.right - 110, self.header_rect.y + 28, self.title_font, value_color)
+        self.draw_text("Time", self.header_rect.right - 270, self.header_rect.y + 10, self.tiny_font, label_color)
+        self.draw_text(f"{elapsed_seconds:03}", self.header_rect.right - 270, self.header_rect.y + 28, self.title_font, value_color)
 
-    def draw_status(self, game_state, animation_time=0):
+    def draw_status(self, game_state, animation_time=0, auto_solver_enabled=False, solver_available=True):
         """
         Draw the footer message and simple animation based on the current result.
 
         Args:
             game_state (GameState): Current game state used to choose status text.
             animation_time (int): Current tick count used for simple animation effects.
+            auto_solver_enabled (bool): Whether auto solver mode is active.
+            solver_available (bool): Whether the compiled solver can be called.
 
         Returns:
             None
@@ -216,6 +247,12 @@ class Renderer:
         elif game_state.game_over:
             text = "Boom, tap the smile to try again"
             color = self.danger_color
+        elif auto_solver_enabled and solver_available:
+            text = "Auto solver is running"
+            color = self.accent_color
+        elif not solver_available:
+            text = "Compile solver.exe to enable auto solver"
+            color = self.subtle_text
         else:
             text = "Left click to reveal, right click to flag"
             color = self.subtle_text

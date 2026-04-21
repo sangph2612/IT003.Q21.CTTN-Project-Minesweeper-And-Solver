@@ -9,6 +9,7 @@ class InputHandler:
         self.cell_size = cell_size
         self.renderer = renderer
         self.restart_pressed = False
+        self.auto_solver_pressed = False
 
     def mouse_to_grid(self, mouse_x, mouse_y):
         """
@@ -32,13 +33,14 @@ class InputHandler:
         col = (mouse_x - origin_x) // self.cell_size
         return row, col
 
-    def handle_mouse_down(self, event, game_state):
+    def handle_mouse_down(self, event, game_state, app=None):
         """
-        Handle mouse press events for reset, reveal, and flag actions.
+        Handle mouse press events for reset, reveal, flag, and auto-solver toggle actions.
 
         Args:
             event (pygame.event.Event): Mouse button event from pygame.
             game_state (GameState): Current game state to update.
+            app (App | None): Application object for toggling auto solver.
 
         Returns:
             bool: True if the game was reset, otherwise False.
@@ -48,7 +50,15 @@ class InputHandler:
         if self.renderer is not None and self.renderer.restart_button_rect.collidepoint(mouse_x, mouse_y):
             self.restart_pressed = True
             game_state.reset_game()
+            if app is not None:
+                app.auto_solver_enabled = False
             return True
+
+        if self.renderer is not None and self.renderer.auto_solver_button_rect.collidepoint(mouse_x, mouse_y):
+            self.auto_solver_pressed = True
+            if app is not None:
+                app.auto_solver_enabled = not app.auto_solver_enabled
+            return False
 
         row, col = self.mouse_to_grid(mouse_x, mouse_y)
 
@@ -65,14 +75,16 @@ class InputHandler:
         """Reset button press visuals when the left mouse button is released."""
         if event.button == 1:
             self.restart_pressed = False
+            self.auto_solver_pressed = False
 
-    def handle_key(self, event, game_state):
+    def handle_key(self, event, game_state, app=None):
         """
         Handle keyboard shortcuts such as restarting the current match.
 
         Args:
             event (pygame.event.Event): Keyboard event from pygame.
             game_state (GameState): Current game state to update.
+            app (App | None): Application object for toggling auto solver.
 
         Returns:
             bool: True if the game was reset, otherwise False.
@@ -80,25 +92,32 @@ class InputHandler:
         if event.key == pygame.K_r:
             game_state.reset_game()
             self.restart_pressed = False
+            self.auto_solver_pressed = False
+            if app is not None:
+                app.auto_solver_enabled = False
             return True
+        if event.key == pygame.K_a and app is not None:
+            app.auto_solver_enabled = not app.auto_solver_enabled
+            return False
         return False
 
-    def handle_event(self, event, game_state):
+    def handle_event(self, event, game_state, app=None):
         """
         Dispatch a pygame event to the appropriate input handler.
 
         Args:
             event (pygame.event.Event): Event to process.
             game_state (GameState): Current game state to update.
+            app (App | None): Application object for extra controls.
 
         Returns:
             bool: True if the game was reset, otherwise False.
         """
         if event.type == pygame.MOUSEBUTTONDOWN:
-            return self.handle_mouse_down(event, game_state)
+            return self.handle_mouse_down(event, game_state, app)
         if event.type == pygame.MOUSEBUTTONUP:
             self.handle_mouse_up(event)
             return False
         if event.type == pygame.KEYDOWN:
-            return self.handle_key(event, game_state)
+            return self.handle_key(event, game_state, app)
         return False
