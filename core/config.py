@@ -1,7 +1,14 @@
-ROWS = 12
-COLS = 16
+"""
+author: Pham Thanh Sang
+date: 2026-04-22
+version: 1.0
+last_modify: 2026-04-22
+"""
+
+ROWS = 14
+COLS = 18
 CELL_SIZE = 32
-MINE_COUNT = 30
+MINE_COUNT = 40
 SOLVER_NAME = "solver.exe"
 
 BOARD_PADDING = 20

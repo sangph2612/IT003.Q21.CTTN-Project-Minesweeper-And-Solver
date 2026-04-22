@@ -1,3 +1,10 @@
+"""
+author: Pham Thanh Sang
+date: 2026-04-22
+version: 1.0
+last_modify: 2026-04-22
+"""
+
 import pygame
 
 from core.config import CELL_SIZE, COLS, FPS, MINE_COUNT, ROWS, WINDOW_HEIGHT, WINDOW_TITLE, WINDOW_WIDTH

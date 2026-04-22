@@ -1,3 +1,10 @@
+"""
+author: Pham Thanh Sang
+date: 2026-04-22
+version: 1.0
+last_modify: 2026-04-22
+"""
+
 import pygame
 
 from core.config import BOTTOM_BAR_HEIGHT, BOARD_PADDING, TOP_BAR_HEIGHT, WINDOW_HEIGHT, WINDOW_WIDTH

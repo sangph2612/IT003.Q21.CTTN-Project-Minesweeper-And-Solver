@@ -1,3 +1,10 @@
+"""
+author: Pham Thanh Sang
+date: 2026-04-22
+version: 1.0
+last_modify: 2026-04-22
+"""
+
 from core.board import Board
 import random
 
@@ -116,7 +123,16 @@ class GameState:
             self.victory = True
 
     def caculate_neighbor_flagged(self, row, col):
-        """Count number of neighbor which has a flag """
+        """
+        Count the number of flagged neighboring cells around a revealed cell.
+
+        Args:
+            row (int): Row index of the center cell.
+            col (int): Column index of the center cell.
+
+        Returns:
+            int: Number of adjacent flagged cells.
+        """
         count = 0
         neighbors = self.board.get_neighbors(row, col)
         for neighbor_row, neighbor_col in neighbors:
