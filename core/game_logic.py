@@ -39,11 +39,13 @@ class GameState:
         Returns:
             None
         """
+        neighbors = self.board.get_neighbors(safe_row, safe_col)
+        neighbors.append((safe_row, safe_col))
         cells = [
             (i, j)
             for i in range(self.rows)
             for j in range(self.cols)
-            if (i, j) != (safe_row, safe_col)
+            if not (i, j) in neighbors
         ]
         mine_positions = random.sample(cells, self.num_mines)
 
@@ -73,7 +75,7 @@ class GameState:
                         count += 1
 
                 cell.neighbor_mines = count
-
+    
     def reveal_cell(self, row, col):
         """
         Reveal a cell and apply the main Minesweeper gameplay rules.
@@ -85,11 +87,12 @@ class GameState:
         Returns:
             None
         """
+
         cell = self.board.get_cell(row, col)
 
-        if self.game_over or self.victory or cell.is_revealed or cell.is_flagged:
+        if self.game_over or self.victory or cell.is_flagged or cell.is_revealed:
             return
-
+        
         if not self.first_click_done:
             self.place_mines(row, col)
             self.calculate_neighbor_mines()
@@ -112,6 +115,17 @@ class GameState:
         if self.check_win():
             self.victory = True
 
+    def caculate_neighbor_flagged(self, row, col):
+        """Count number of neighbor which has a flag """
+        count = 0
+        neighbors = self.board.get_neighbors(row, col)
+        for neighbor_row, neighbor_col in neighbors:
+            neighbor_cell = self.board.get_cell(neighbor_row, neighbor_col)
+            if neighbor_cell.is_flagged:
+                count += 1
+        
+        return count
+
     def toggle_flag(self, row, col):
         """
         Add or remove a flag on a hidden cell.
@@ -123,10 +137,18 @@ class GameState:
         Returns:
             None
         """
+
         if self.game_over or self.victory:
             return
         cell = self.board.get_cell(row, col)
         if cell.is_revealed:
+            if self.caculate_neighbor_flagged(row, col) == cell.neighbor_mines:
+                neighbors = self.board.get_neighbors(row, col)
+                for neighbor_row, neighbor_col in neighbors:
+                    neighbor_cell = self.board.get_cell(neighbor_row, neighbor_col)
+                    if not neighbor_cell.is_revealed:
+                        self.reveal_cell(neighbor_row, neighbor_col)
+            
             return
         self.move_count += 1
         if cell.is_flagged:

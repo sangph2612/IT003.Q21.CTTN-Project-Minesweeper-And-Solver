@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import subprocess
 from pathlib import Path
+from core.config import SOLVER_NAME
 
 
 class SolverBridge:
@@ -12,7 +13,7 @@ class SolverBridge:
         if project_root is None:
             project_root = Path(__file__).resolve().parent.parent
         self.project_root = Path(project_root)
-        self.solver_path = self.project_root / "solver.exe"
+        self.solver_path = self.project_root / SOLVER_NAME
 
     def is_available(self):
         """Return True if the compiled solver executable is available."""
