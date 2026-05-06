@@ -44,6 +44,9 @@ Thumbs.db
 # Logs
 *.log
 
+# Generated documentation exports
+docstring.txt
+
 # Local planning and notes
 TODO.md
 *plan*.md
