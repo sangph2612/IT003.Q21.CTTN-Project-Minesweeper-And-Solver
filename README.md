@@ -159,6 +159,41 @@ pip install pygame
 python main.py
 ```
 
+### Benchmark the solver
+
+You can run an automated benchmark to estimate the solver pass rate across many games.
+
+```bash
+python benchmark_solver.py --preset project --runs 100 --seed 42
+```
+
+You can also benchmark across multiple difficulty buckets in one command:
+
+```bash
+python benchmark_solver.py --difficulty-preset classic --runs 100 --seed 42
+```
+
+Current `classic` difficulty set:
+
+- easy = 9x9, 10 mines
+- medium = 12x16, 25 mines
+- hard = 14x18, 35 mines
+
+Useful options:
+
+- `--preset beginner|intermediate|expert|project`
+- `--difficulty-preset classic|project`
+- `--difficulty-label <name>` for single-board runs
+- `--rows`, `--cols`, `--mines` to override board size
+- `--first-click-mode random|fixed|none`
+- `--first-click-row`, `--first-click-col` for fixed opening tests
+- `--output-dir benchmark_results`
+
+The benchmark writes:
+
+- a JSON summary with overall pass rate and per-difficulty breakdown
+- a CSV file with per-run details such as difficulty, seed, steps, duration, and failure reason
+
 ## How the Solver Connects to the Game
 
 The Python game converts the visible board into the solver input format:

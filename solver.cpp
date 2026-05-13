@@ -622,6 +622,7 @@ signed main(){
     collect_frontier_cells();
     build_constraints();
     Move move = deterministic_inference();
+    // print_move(move);
     if (move.row != -1)
         print_move(move);
     else 
